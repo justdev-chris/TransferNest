@@ -1,0 +1,3 @@
+/uploads  ← auto-created by the server.js
+/server.js
+/index.html (in separate static deployment like GitHub Pages or smth else)

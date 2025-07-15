@@ -38,7 +38,7 @@ app.listen(PORT, () => {
 });
 
 
-// Serve test page for iframe status
+// makes sure if server online
 app.get("/", (req, res) => {
   res.send("<h2>🟢 TransferNest Server is Online</h2>");
 });

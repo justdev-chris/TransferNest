@@ -6,111 +6,218 @@
   <title>TransferNest</title>
   <style>
     body {
-      font-family: 'Segoe UI', sans-serif;
-      background-color: #121212;
-      color: #f1f1f1;
-      text-align: center;
-      padding: 2rem;
-    }
-
-    h1 {
-      font-size: 2.5rem;
-      margin-bottom: 1rem;
-    }
-
-    form {
-      margin: 1.5rem auto;
-      padding: 1rem;
-      background-color: #1e1e1e;
-      border-radius: 12px;
-      max-width: 400px;
-    }
-
-    input[type="file"] {
-      margin-bottom: 1rem;
-      background: #fff;
-      padding: 0.5rem;
-      border-radius: 6px;
-    }
-
-    button {
-      background-color: #00bcd4;
-      border: none;
-      padding: 0.6rem 1.2rem;
-      border-radius: 8px;
+      font-family: "Segoe UI", sans-serif;
+      background: #0f0f1a;
       color: #fff;
-      font-weight: bold;
-      cursor: pointer;
+      margin: 0;
+      padding: 2em;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
     }
-
-    #downloadLink {
-      margin-top: 1rem;
-      font-size: 1.1rem;
-      color: #80d8ff;
+    h1 {
+      color: #9fe8fa;
+      text-shadow: 0 0 10px #00f0ff;
     }
-
-    iframe {
+    input[type="file"] {
       display: none;
-      margin-top: 2rem;
-      width: 100%;
-      height: 300px;
-      border: none;
     }
-
-    img.gif {
-      margin-top: 2rem;
-      max-width: 180px;
+    label {
+      background: #1e1e2f;
+      padding: 1em 2em;
+      border-radius: 12px;
+      cursor: pointer;
+      border: 2px dashed #5fd6ff;
+      text-align: center;
+      transition: 0.3s ease;
+    }
+    label:hover {
+      box-shadow: 0 0 15px #5fd6ff;
+    }
+    #drop-area {
+      border: 2px dashed #aaa;
       border-radius: 10px;
+      padding: 2em;
+      margin: 1em 0;
+      width: 100%;
+      max-width: 400px;
+      text-align: center;
+      transition: border-color 0.3s ease;
+    }
+    #drop-area.hover {
+      border-color: #00f0ff;
+    }
+    .upload-link {
+      margin-top: 1em;
+      color: #5fd6ff;
+      word-break: break-all;
+    }
+    .history, .stats {
+      margin-top: 2em;
+      background: #1c1c2b;
+      padding: 1em;
+      border-radius: 10px;
+      width: 100%;
+      max-width: 500px;
+    }
+    .history h2, .stats h2 {
+      margin-top: 0;
+    }
+    .file-entry {
+      display: flex;
+      align-items: center;
+      margin-bottom: 0.5em;
+    }
+    .file-icon {
+      margin-right: 0.5em;
+    }
+    .glow {
+      transition: 0.2s;
+    }
+    .glow:hover {
+      text-shadow: 0 0 10px #9fe8fa;
+    }
+    .gif-container {
+      margin-top: 1em;
+    }
+    .warning {
+      color: #ff9c9c;
+      font-weight: bold;
+      margin-bottom: 1em;
+      text-align: center;
     }
   </style>
 </head>
 <body>
-  <h1>TransferNest 🕊️</h1>
-  <p>A simple 24/7 file hoster.</p>
-  <p>Upload your file and get a download link~</p>
-  <p>Max File Size: 20-50MB unfortunately</p>
+  <h1 class="glow">TransferNest</h1>
 
-  <form id="uploadForm">
-    <input type="file" name="file" required />
-    <br />
-    <button type="submit">Upload</button>
-  </form>
+  <div class="warning">⚠️ Large files might fail to upload due to server limitations!</div>
 
-  <div id="downloadLink"></div>
+  <div class="gif-container">
+    <img src="https://c.tenor.com/3DzhsHs_8G8AAAAC/tenor.gif" alt="cute gif" width="200" style="border-radius: 12px;">
+  </div>
 
-  <iframe id="serverStatus" src="https://gh623d-3000.csb.app" title="Server Status"></iframe>
+  <div id="drop-area" class="glow">
+    <form id="uploadForm">
+      <label for="fileInput">📁 Choose a file or drag it here</label>
+      <input type="file" id="fileInput" name="file" />
+    </form>
+  </div>
 
-  <img class="gif" src="https://c.tenor.com/3DzhsHs_8G8AAAAC/tenor.gif" alt="vibe cat"/>
+  <div id="uploadLink" class="upload-link"></div>
+
+  <div class="stats">
+    <h2>📊 Stats</h2>
+    <p>Total uploads: <span id="uploadCount">0</span></p>
+    <p>Total size: <span id="totalSize">0 KB</span></p>
+  </div>
+
+  <div class="history">
+    <h2>📜 Upload History</h2>
+    <div id="uploadHistory"></div>
+  </div>
 
   <script>
     const form = document.getElementById("uploadForm");
-    const downloadLink = document.getElementById("downloadLink");
-    const serverUrl = "https://gh623d-3000.csb.app"; // if fork use ur own server not mine lol
+    const fileInput = document.getElementById("fileInput");
+    const uploadLink = document.getElementById("uploadLink");
+    const uploadHistoryEl = document.getElementById("uploadHistory");
+    const uploadCountEl = document.getElementById("uploadCount");
+    const totalSizeEl = document.getElementById("totalSize");
+    const dropArea = document.getElementById("drop-area");
 
-    form.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const fileInput = form.querySelector('input[type="file"]');
-      const file = fileInput.files[0];
+    const SERVER_URL = "https://gh623d-3000.csb.app/upload";
 
-      if (!file) return;
+    let uploadCount = parseInt(localStorage.getItem("uploadCount") || "0");
+    let totalSize = parseInt(localStorage.getItem("totalSize") || "0");
+
+    function updateStatsDisplay() {
+      uploadCountEl.textContent = uploadCount;
+      totalSizeEl.textContent = (totalSize / 1024).toFixed(2) + " KB";
+    }
+
+    function getFileIcon(filename) {
+      const ext = filename.split(".").pop().toLowerCase();
+      if (["png", "jpg", "jpeg", "gif", "bmp", "webp"].includes(ext)) return "🖼️";
+      if (["txt", "md", "log"].includes(ext)) return "📄";
+      if (["zip", "rar", "7z"].includes(ext)) return "🗜️";
+      if (["js", "html", "css", "json"].includes(ext)) return "💻";
+      return "📦";
+    }
+
+    function saveToHistory(name, link) {
+      let history = JSON.parse(localStorage.getItem("uploadHistory") || "[]");
+      history.unshift({ name, link });
+      localStorage.setItem("uploadHistory", JSON.stringify(history.slice(0, 10)));
+    }
+
+    function loadHistory() {
+      let history = JSON.parse(localStorage.getItem("uploadHistory") || "[]");
+      uploadHistoryEl.innerHTML = "";
+      for (const file of history) {
+        const icon = getFileIcon(file.name);
+        const entry = document.createElement("div");
+        entry.className = "file-entry";
+        entry.innerHTML = `<span class="file-icon">${icon}</span><a class="glow" href="${file.link}" target="_blank">${file.name}</a>`;
+        uploadHistoryEl.appendChild(entry);
+      }
+    }
+
+    async function uploadFile(file) {
+      if (file.size > 5 * 1024 * 1024) {
+        uploadLink.innerHTML = "❌ File too large! Try under 5MB.";
+        return;
+      }
 
       const formData = new FormData();
       formData.append("file", file);
 
-      try {
-        const res = await fetch(`${serverUrl}/upload`, {
-          method: "POST",
-          body: formData,
-        });
+      const res = await fetch(SERVER_URL, {
+        method: "POST",
+        body: formData,
+      });
 
-        const result = await res.json();
-        const link = `${serverUrl}${result.link}`;
-        downloadLink.innerHTML = `<a href="${link}" target="_blank" download>🔗 Download your file</a>`;
-      } catch (err) {
-        downloadLink.innerHTML = `Server might be offline! <br> Try again later.`;
-        document.getElementById("serverStatus").style.display = "block";
+      if (!res.ok) {
+        uploadLink.textContent = "⚠️ Upload failed.";
+        return;
       }
+
+      const data = await res.json();
+      const link = `https://gh623d-3000.csb.app${data.link}`;
+      uploadLink.innerHTML = `✅ File uploaded: <a class="glow" href="${link}" target="_blank">${link}</a>`;
+
+      uploadCount++;
+      totalSize += file.size;
+      localStorage.setItem("uploadCount", uploadCount);
+      localStorage.setItem("totalSize", totalSize);
+      saveToHistory(file.name, link);
+      updateStatsDisplay();
+      loadHistory();
+    }
+
+    form.addEventListener("change", (e) => {
+      const file = fileInput.files[0];
+      if (file) uploadFile(file);
     });
+
+    dropArea.addEventListener("dragover", (e) => {
+      e.preventDefault();
+      dropArea.classList.add("hover");
+    });
+
+    dropArea.addEventListener("dragleave", () => {
+      dropArea.classList.remove("hover");
+    });
+
+    dropArea.addEventListener("drop", (e) => {
+      e.preventDefault();
+      dropArea.classList.remove("hover");
+      const file = e.dataTransfer.files[0];
+      if (file) uploadFile(file);
+    });
+
+    updateStatsDisplay();
+    loadHistory();
   </script>
 </body>
 </html>

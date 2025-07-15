@@ -1,2 +1,3 @@
 # TransferNest
-A 24/7 file uploader. Made with HTML, CSS, JavaScript, and Node.js.
+
+**TransferNest** is a lightweight file uploading and sharing service built with Node.js and vanilla HTML. It allows users to upload files.

@@ -43,7 +43,7 @@ TransferNest/
 
 2. **Install dependencies:**
    ```bash
-   npm install express multer
+   npm install express multer cors path
    ```
 
 3. **Run the server:**

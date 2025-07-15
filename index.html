@@ -66,6 +66,7 @@
 </head>
 <body>
   <h1>TransferNest 🕊️</h1>
+  <p>A simple 24/7 file hoster.</p>
   <p>Upload your file and get a download link~</p>
 
   <form id="uploadForm">
@@ -83,7 +84,7 @@
   <script>
     const form = document.getElementById("uploadForm");
     const downloadLink = document.getElementById("downloadLink");
-    const serverUrl = "https://gh623d-3000.csb.app"; // your server url!
+    const serverUrl = "https://gh623d-3000.csb.app"; // if fork use ur own server not mine lol
 
     form.addEventListener("submit", async (e) => {
       e.preventDefault();

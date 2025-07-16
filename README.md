@@ -11,8 +11,8 @@
 - 💡 Self-hostable backend with REST API  
 - 🌐 Minimal frontend with iframe preview support  
 - 🔒 Private links (if hosted securely)
-
----
+- 💭 Uses LocalStorage to remember previous uploads and links.
+- 🐱 Shows total storage used.
 
 ## 📦 Project Structure
 
@@ -43,7 +43,7 @@ TransferNest/
 
 2. **Install dependencies:**
    ```bash
-   npm install express multer cors path
+   npm install express multer cors
    ```
 
 3. **Run the server:**

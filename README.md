@@ -1,6 +1,6 @@
 # TransferNest
 
-**TransferNest** is a lightweight file uploading and sharing service built with Node.js and vanilla HTML. It allows users to upload files and instantly receive a downloadable link to share.
+**TransferNest** is a lightweight file uploading and sharing service built with Node.js and vanilla HTML . It allows users to upload files and instantly receive a downloadable link to share. TransferNest is currently powered by supabase!
 
 ---
 

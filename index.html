@@ -44,7 +44,6 @@ $$$$$$$$\                                      $$$$$$\                     $$\  
 <html lang="en">
 <head>
   <link rel="icon" type="image/ico" href="favicon.ico" />
-</head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>TransferNest</title>
@@ -130,12 +129,36 @@ $$$$$$$$\                                      $$$$$$\                     $$\  
       margin-bottom: 1em;
       text-align: center;
     }
+    #progressContainer {
+      width: 100%;
+      max-width: 400px;
+      margin-top: 1em;
+      height: 10px;
+      background: #333;
+      border-radius: 5px;
+      overflow: hidden;
+      display: none;
+    }
+    #progressBar {
+      height: 100%;
+      background: #5fd6ff;
+      width: 0%;
+      transition: width 0.2s ease;
+    }
   </style>
+  <!-- lil sdk stuff idk i forgot-->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const supabase = supabase.createClient(
+      "https://ezdnztybarjtkgedenos.supabase.co/", // no stop it dont even think about it
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV6ZG56dHliYXJqdGtnZWRlbm9zIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTMwOTQwNjYsImV4cCI6MjA2ODY3MDA2Nn0.AkbetAqtr9C1zG1qc54feMMNGIjvv016KZhEVG2CPJg"           
+    );
+  </script>
 </head>
 <body>
   <h1 class="glow">TransferNest</h1>
 
-  <div class="warning">⚠️ Large files might fail to upload due to server limitations!</div>
+  <div class="warning">⚠️ Max file size: 50MB</div>
 
   <div class="gif-container">
     <img src="https://c.tenor.com/3DzhsHs_8G8AAAAC/tenor.gif" alt="cute gif" width="200" style="border-radius: 12px;">
@@ -146,6 +169,7 @@ $$$$$$$$\                                      $$$$$$\                     $$\  
       <label for="fileInput">📁 Choose a file or drag it here</label>
       <input type="file" id="fileInput" name="file" />
     </form>
+    <div id="progressContainer"><div id="progressBar"></div></div>
   </div>
 
   <div id="uploadLink" class="upload-link"></div>
@@ -161,107 +185,6 @@ $$$$$$$$\                                      $$$$$$\                     $$\  
     <div id="uploadHistory"></div>
   </div>
 
-  <script>
-    const form = document.getElementById("uploadForm");
-    const fileInput = document.getElementById("fileInput");
-    const uploadLink = document.getElementById("uploadLink");
-    const uploadHistoryEl = document.getElementById("uploadHistory");
-    const uploadCountEl = document.getElementById("uploadCount");
-    const totalSizeEl = document.getElementById("totalSize");
-    const dropArea = document.getElementById("drop-area");
-
-    const SERVER_URL = "https://gh623d-3000.csb.app/upload";
-
-    let uploadCount = parseInt(localStorage.getItem("uploadCount") || "0");
-    let totalSize = parseInt(localStorage.getItem("totalSize") || "0");
-
-    function updateStatsDisplay() {
-      uploadCountEl.textContent = uploadCount;
-      totalSizeEl.textContent = (totalSize / 1024).toFixed(2) + " KB";
-    }
-
-    function getFileIcon(filename) {
-      const ext = filename.split(".").pop().toLowerCase();
-      if (["png", "jpg", "jpeg", "gif", "bmp", "webp"].includes(ext)) return "🖼️";
-      if (["txt", "md", "log"].includes(ext)) return "📄";
-      if (["zip", "rar", "7z"].includes(ext)) return "🗜️";
-      if (["js", "html", "css", "json"].includes(ext)) return "💻";
-      return "📦";
-    }
-
-    function saveToHistory(name, link) {
-      let history = JSON.parse(localStorage.getItem("uploadHistory") || "[]");
-      history.unshift({ name, link });
-      localStorage.setItem("uploadHistory", JSON.stringify(history.slice(0, 10)));
-    }
-
-    function loadHistory() {
-      let history = JSON.parse(localStorage.getItem("uploadHistory") || "[]");
-      uploadHistoryEl.innerHTML = "";
-      for (const file of history) {
-        const icon = getFileIcon(file.name);
-        const entry = document.createElement("div");
-        entry.className = "file-entry";
-        entry.innerHTML = `<span class="file-icon">${icon}</span><a class="glow" href="${file.link}" target="_blank">${file.name}</a>`;
-        uploadHistoryEl.appendChild(entry);
-      }
-    }
-
-    async function uploadFile(file) {
-      if (file.size > 5 * 1024 * 1024) {
-        uploadLink.innerHTML = "❌ File too large! Try under 5MB.";
-        return;
-      }
-
-      const formData = new FormData();
-      formData.append("file", file);
-
-      const res = await fetch(SERVER_URL, {
-        method: "POST",
-        body: formData,
-      });
-
-      if (!res.ok) {
-        uploadLink.textContent = "⚠️ Upload failed.";
-        return;
-      }
-
-      const data = await res.json();
-      const link = `https://gh623d-3000.csb.app${data.link}`;
-      uploadLink.innerHTML = `✅ File uploaded: <a class="glow" href="${link}" target="_blank">${link}</a>`;
-
-      uploadCount++;
-      totalSize += file.size;
-      localStorage.setItem("uploadCount", uploadCount);
-      localStorage.setItem("totalSize", totalSize);
-      saveToHistory(file.name, link);
-      updateStatsDisplay();
-      loadHistory();
-    }
-
-    form.addEventListener("change", (e) => {
-      const file = fileInput.files[0];
-      if (file) uploadFile(file);
-    });
-
-    dropArea.addEventListener("dragover", (e) => {
-      e.preventDefault();
-      dropArea.classList.add("hover");
-    });
-
-    dropArea.addEventListener("dragleave", () => {
-      dropArea.classList.remove("hover");
-    });
-
-    dropArea.addEventListener("drop", (e) => {
-      e.preventDefault();
-      dropArea.classList.remove("hover");
-      const file = e.dataTransfer.files[0];
-      if (file) uploadFile(file);
-    });
-
-    updateStatsDisplay();
-    loadHistory();
-  </script>
+  <script src="script.js"></script>
 </body>
 </html>

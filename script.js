@@ -18,7 +18,7 @@ progressBar.value = 0;
 form.appendChild(progressBar);
 
 // 🐾 Supabase client
-const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const client = client.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // 🐾 LocalStorage Stats
 let uploadCount = parseInt(localStorage.getItem("uploadCount") || "0");

@@ -18,7 +18,7 @@ progressBar.value = 0;
 form.appendChild(progressBar);
 
 // 🐾 Supabase client
-const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // 🐾 LocalStorage Stats
 let uploadCount = parseInt(localStorage.getItem("uploadCount") || "0");
@@ -71,7 +71,7 @@ async function uploadFile(file) {
       progressBar.value = progress;
     }, 150);
 
-    const { data, error } = await supabase.storage
+    const { data, error } = await client.storage
       .from(BUCKET)
       .upload(filename, file);
 
@@ -84,7 +84,7 @@ async function uploadFile(file) {
     }
 
     // get public URL
-    const { data: pub } = supabase.storage.from(BUCKET).getPublicUrl(filename);
+    const { data: pub } = client.storage.from(BUCKET).getPublicUrl(filename);
     const link = pub.publicUrl;
 
     uploadLink.innerHTML = `✅ Uploaded: <a class="glow" href="${link}" target="_blank">${link}</a>`;

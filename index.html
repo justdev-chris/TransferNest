@@ -177,108 +177,55 @@ $$$$$$$$\                                      $$$$$$\                     $$\  
     <div id="uploadHistory"></div>
   </div>
 
-  <script>
-    const uploadForm = document.getElementById('uploadForm');
-    const fileInput = document.getElementById('fileInput');
-    const uploadLink = document.getElementById('uploadLink');
-    const progressContainer = document.getElementById('progressContainer');
-    const progressBar = document.getElementById('progressBar');
-    const uploadCountSpan = document.getElementById('uploadCount');
-    const totalSizeSpan = document.getElementById('totalSize');
-    const uploadHistoryDiv = document.getElementById('uploadHistory');
+<script>
+  const fileInput = document.getElementById("fileInput");
+  const uploadLink = document.getElementById("uploadLink");
+  const form = document.getElementById("uploadForm");
+  const progressBar = document.getElementById("progressBar");
+  const progressContainer = document.getElementById("progressContainer");
 
-    let uploadCount = 0;
-    let totalSize = 0;
-    const maxFileSize = 50 * 1024 * 1024; // 50MB limit
+  fileInput.addEventListener("change", async () => {
+    const file = fileInput.files[0];
+    if (!file) return;
 
-    function formatBytes(bytes) {
-      if (bytes < 1024) return bytes + ' B';
-      else if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(2) + ' KB';
-      else if (bytes < 1024 * 1024 * 1024) return (bytes / (1024 * 1024)).toFixed(2) + ' MB';
-      else return (bytes / (1024 * 1024 * 1024)).toFixed(2) + ' GB';
-    }
+    const formData = new FormData();
+    formData.append("file", file);
 
-    uploadForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const file = fileInput.files[0];
-      if (!file) return alert('Please select a file, cutie! 🥺');
+    progressContainer.style.display = "block";
+    progressBar.style.width = "0%";
 
-      if (file.size > maxFileSize) {
-        alert('File too big! Max size is 50MB, nya~');
-        return;
-      }
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", "https://api.catsdevs.online/upload", true);
 
-      const formData = new FormData();
-      formData.append('file', file);
+    xhr.upload.onprogress = (e) => {
+      const percent = (e.loaded / e.total) * 100;
+      progressBar.style.width = `${percent}%`;
+    };
 
-      progressContainer.style.display = 'block';
-      progressBar.style.width = '0%';
-      uploadLink.textContent = '';
+    xhr.onload = () => {
+      progressBar.style.width = `100%`;
 
       try {
-        const response = await fetch('https://api.catsdevs.online/upload', {
-          method: 'POST',
-          body: formData,
-        });
+        const response = JSON.parse(xhr.responseText);
+        console.log("Upload response:", response);
 
-        if (!response.ok) {
-          throw new Error('Upload failed, meow!');
+        if (response.url) {
+          uploadLink.innerHTML = `<a href="${response.url}" target="_blank">${response.filename}</a>`;
+        } else {
+          uploadLink.textContent = "Upload succeeded but no URL returned, nya~ 😿";
         }
-
-        const data = await response.json();
-
-        // stats
-        uploadCount++;
-        totalSize += file.size;
-        uploadCountSpan.textContent = uploadCount;
-        totalSizeSpan.textContent = formatBytes(totalSize);
-
-        // uploaded file link
-        uploadLink.innerHTML = `File uploaded successfully! <a href="https://api.catsdevs.online/files/${encodeURIComponent(data.filename)}" target="_blank" rel="noopener noreferrer">${data.filename}</a>`;
-
-        // add to upload history
-        const entry = document.createElement('div');
-        entry.classList.add('file-entry');
-        entry.innerHTML = `
-          📁 <a href="https://api.catsdevs.online/files/${encodeURIComponent(data.filename)}" target="_blank" rel="noopener noreferrer">${data.filename}</a>
-          &nbsp;(${formatBytes(file.size)})
-        `;
-        uploadHistoryDiv.prepend(entry);
-
       } catch (err) {
-        alert(err.message || 'Something went wrong, nya!');
-      } finally {
-        progressContainer.style.display = 'none';
+        uploadLink.textContent = "Upload failed to parse response 😿";
+        console.error("Parse error:", err, xhr.responseText);
       }
-    });
+    };
 
-    // Drag & drop support
-    const dropArea = document.getElementById('drop-area');
+    xhr.onerror = () => {
+      uploadLink.textContent = "Upload error... nyaaaa~ 😭";
+    };
 
-    ;['dragenter', 'dragover'].forEach(eventName => {
-      dropArea.addEventListener(eventName, (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        dropArea.classList.add('hover');
-      });
-    });
-
-    ;['dragleave', 'drop'].forEach(eventName => {
-      dropArea.addEventListener(eventName, (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        dropArea.classList.remove('hover');
-      });
-    });
-
-    dropArea.addEventListener('drop', (e) => {
-      const dt = e.dataTransfer;
-      const files = dt.files;
-      if (files.length) {
-        fileInput.files = files;
-        uploadForm.dispatchEvent(new Event('submit'));
-      }
-    });
-  </script>
+    xhr.send(formData);
+  });
+</script>
 </body>
 </html>

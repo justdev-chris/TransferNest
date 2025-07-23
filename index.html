@@ -94,6 +94,7 @@ $$$$$$$$\                                      $$$$$$\                     $$\  
       margin-top: 1em;
       color: #5fd6ff;
       word-break: break-all;
+      text-align: center;
     }
     .history, .stats {
       margin-top: 2em;
@@ -177,55 +178,79 @@ $$$$$$$$\                                      $$$$$$\                     $$\  
     <div id="uploadHistory"></div>
   </div>
 
-<script>
-  const fileInput = document.getElementById("fileInput");
-  const uploadLink = document.getElementById("uploadLink");
-  const form = document.getElementById("uploadForm");
-  const progressBar = document.getElementById("progressBar");
-  const progressContainer = document.getElementById("progressContainer");
+  <script>
+    console.log("Uploader script loaded, rawr~ 🐾");
 
-  fileInput.addEventListener("change", async () => {
-    const file = fileInput.files[0];
-    if (!file) return;
+    const fileInput = document.getElementById("fileInput");
+    const uploadLink = document.getElementById("uploadLink");
+    const progressBar = document.getElementById("progressBar");
+    const progressContainer = document.getElementById("progressContainer");
+    const uploadCount = document.getElementById("uploadCount");
+    const totalSize = document.getElementById("totalSize");
+    const uploadHistory = document.getElementById("uploadHistory");
 
-    const formData = new FormData();
-    formData.append("file", file);
+    let totalUploads = 0;
+    let totalUploadedSize = 0;
 
-    progressContainer.style.display = "block";
-    progressBar.style.width = "0%";
+    fileInput.addEventListener("change", async () => {
+      const file = fileInput.files[0];
+      if (!file) return;
 
-    const xhr = new XMLHttpRequest();
-    xhr.open("POST", "https://api.catsdevs.online/upload", true);
+      const formData = new FormData();
+      formData.append("file", file);
 
-    xhr.upload.onprogress = (e) => {
-      const percent = (e.loaded / e.total) * 100;
-      progressBar.style.width = `${percent}%`;
-    };
+      progressContainer.style.display = "block";
+      progressBar.style.width = "0%";
 
-    xhr.onload = () => {
-      progressBar.style.width = `100%`;
+      const xhr = new XMLHttpRequest();
+      xhr.open("POST", "https://api.catsdevs.online/upload", true);
 
-      try {
-        const response = JSON.parse(xhr.responseText);
-        console.log("Upload response:", response);
+      xhr.upload.onprogress = (e) => {
+        const percent = (e.loaded / e.total) * 100;
+        progressBar.style.width = `${percent}%`;
+      };
 
-        if (response.url) {
-          uploadLink.innerHTML = `<a href="${response.url}" target="_blank">${response.filename}</a>`;
-        } else {
-          uploadLink.textContent = "Upload succeeded but no URL returned, nya~ 😿";
+      xhr.onload = () => {
+        progressBar.style.width = "100%";
+        console.log("Raw response:", xhr.responseText);
+
+        try {
+          const response = JSON.parse(xhr.responseText);
+          console.log("Parsed response:", response);
+
+          if (response.url) {
+            uploadLink.innerHTML = `
+              <p>Upload successful, nya~! 🎉</p>
+              <a href="${response.url}" download target="_blank" rel="noopener noreferrer">${response.filename}</a>
+            `;
+            totalUploads++;
+            totalUploadedSize += file.size;
+            uploadCount.textContent = totalUploads;
+            totalSize.textContent = `${(totalUploadedSize / 1024).toFixed(2)} KB`;
+
+            // Add to upload history
+            const entry = document.createElement("div");
+            entry.className = "file-entry";
+            entry.innerHTML = `
+              <span class="file-icon">📄</span>
+              <a href="${response.url}" target="_blank" rel="noopener noreferrer">${response.filename}</a>
+            `;
+            uploadHistory.prepend(entry);
+          } else {
+            uploadLink.innerHTML = `<p>Upload succeeded but no URL returned, nya~ 😿</p>`;
+          }
+        } catch (err) {
+          uploadLink.innerHTML = `<p>Upload failed to parse JSON, rawr~ 😭</p>`;
+          console.error("JSON parse error:", err, xhr.responseText);
         }
-      } catch (err) {
-        uploadLink.textContent = "Upload failed to parse response 😿";
-        console.error("Parse error:", err, xhr.responseText);
-      }
-    };
+      };
 
-    xhr.onerror = () => {
-      uploadLink.textContent = "Upload error... nyaaaa~ 😭";
-    };
+      xhr.onerror = () => {
+        uploadLink.innerHTML = `<p>Something went wrong while uploading, nyaaaa~ 😿</p>`;
+      };
 
-    xhr.send(formData);
-  });
-</script>
+      xhr.send(formData);
+    });
+  </script>
 </body>
 </html>

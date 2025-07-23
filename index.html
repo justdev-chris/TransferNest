@@ -227,16 +227,16 @@ $$$$$$$$\                                      $$$$$$\                     $$\  
 
         const data = await response.json();
 
-        // Update stats
+        // stats
         uploadCount++;
         totalSize += file.size;
         uploadCountSpan.textContent = uploadCount;
         totalSizeSpan.textContent = formatBytes(totalSize);
 
-        // Show the uploaded file link
+        // uploaded file link
         uploadLink.innerHTML = `File uploaded successfully! <a href="https://api.catsdevs.online/files/${encodeURIComponent(data.filename)}" target="_blank" rel="noopener noreferrer">${data.filename}</a>`;
 
-        // Add to upload history
+        // add to upload history
         const entry = document.createElement('div');
         entry.classList.add('file-entry');
         entry.innerHTML = `

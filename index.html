@@ -220,7 +220,7 @@ $$$$$$$$\                                      $$$$$$\                     $$\  
 
           if (response.url) {
             uploadLink.innerHTML = `
-              <p>Upload successful, nya~! 🎉</p>
+              <p>Upload successful! 🎉</p>
               <a href="${response.url}" download target="_blank" rel="noopener noreferrer">${response.filename}</a>
             `;
             totalUploads++;
@@ -237,16 +237,16 @@ $$$$$$$$\                                      $$$$$$\                     $$\  
             `;
             uploadHistory.prepend(entry);
           } else {
-            uploadLink.innerHTML = `<p>Upload succeeded but no URL returned, nya~ 😿</p>`;
+            uploadLink.innerHTML = `<p>Upload succeeded but no URL returned 😿</p>`;
           }
         } catch (err) {
-          uploadLink.innerHTML = `<p>Upload failed to parse JSON, rawr~ 😭</p>`;
+          uploadLink.innerHTML = `<p>Upload failed to parse JSON 😭</p>`;
           console.error("JSON parse error:", err, xhr.responseText);
         }
       };
 
       xhr.onerror = () => {
-        uploadLink.innerHTML = `<p>Something went wrong while uploading, nyaaaa~ 😿</p>`;
+        uploadLink.innerHTML = `<p>Something went wrong while uploading 😿</p>`;
       };
 
       xhr.send(formData);
